@@ -5,26 +5,28 @@ configuration that ties the repos together, so cross-repo workflows run from one
 
 ## Repos coordinated
 
-Referenced in place as siblings (via `../`) — never relocated, each independently cloneable:
+Members live as **gitignored subdirectories** of this workspace — each is its own
+git repo, tracked there, never committed here:
 
 - [`mothership`](https://github.com/atomikpanda/mothership) — the cross-repo workflow CLI (`mship`).
 - [`ground-control`](https://github.com/atomikpanda/ground-control) — the mobile spec cockpit.
 
 ## Setup
 
-Clone all three as siblings, then drive `mship` from this directory:
+Clone the workspace, then clone the members **into** it, then drive `mship` from here:
 
 ```bash
-mkdir mship && cd mship
-git clone https://github.com/atomikpanda/mothership
-git clone https://github.com/atomikpanda/ground-control
 git clone https://github.com/atomikpanda/mship-workspace
 cd mship-workspace
-mship status   # resolves the workspace and both repos
+git clone https://github.com/atomikpanda/mothership
+git clone https://github.com/atomikpanda/ground-control
+mship status   # resolves the workspace and both members
 ```
 
-`mothership.yaml` references the sibling repos via `../`, so `mship` commands
-(`spawn`, `status`, `audit`, `spec`, …) operate on the whole family from here.
+The member dirs are `.gitignore`d, so `mship` commands (`spawn`, `status`, `audit`,
+`spec`, …) operate on the whole family from here without the workspace repo tracking
+the members. (If you already have a `mothership` checkout, symlink it in instead of
+re-cloning: `ln -s /path/to/mothership ./mothership`.)
 
 ## License
 

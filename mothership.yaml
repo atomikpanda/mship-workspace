@@ -1,12 +1,13 @@
 # mship-workspace — coordination workspace for the Mothership family.
-# Repos are referenced in place as siblings (../), never relocated, so each
-# stays independently cloneable while `mship` coordinates them from here.
+# Members live as gitignored subdirectories (cloned into the workspace). On a
+# machine with an existing `mothership` checkout, `mothership/` may be a symlink
+# to it. `mship` coordinates the members from here.
 workspace: mship-workspace
 
 repos:
   mothership:
-    path: ../mothership
+    path: mothership
     type: service
   ground-control:
-    path: ../ground-control
+    path: ground-control
     type: service

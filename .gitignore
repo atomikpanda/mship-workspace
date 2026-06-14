@@ -1,3 +1,8 @@
+# Member repos — each is its own git repo (cloned or symlinked in), tracked
+# there, never committed to the workspace repo.
+/mothership
+/ground-control
+
 # Mothership runtime state
 .worktrees/
 .mothership/

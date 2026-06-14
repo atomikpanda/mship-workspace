@@ -8,6 +8,10 @@ repos:
   mothership:
     path: mothership
     type: service
+    base_branch: main
+    expected_branch: main
   ground-control:
     path: ground-control
     type: service
+    base_branch: main
+    expected_branch: main

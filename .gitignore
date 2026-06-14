@@ -1,0 +1,5 @@
+# Mothership runtime state
+.worktrees/
+.mothership/
+
+.DS_Store

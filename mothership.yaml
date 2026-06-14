@@ -1,0 +1,12 @@
+# mship-workspace — coordination workspace for the Mothership family.
+# Repos are referenced in place as siblings (../), never relocated, so each
+# stays independently cloneable while `mship` coordinates them from here.
+workspace: mship-workspace
+
+repos:
+  mothership:
+    path: ../mothership
+    type: service
+  ground-control:
+    path: ../ground-control
+    type: service

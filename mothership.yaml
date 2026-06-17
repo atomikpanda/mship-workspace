@@ -4,6 +4,12 @@
 # to it. `mship` coordinates the members from here.
 workspace: mship-workspace
 
+# Base prefix for resolving each member's clone URL when its `url` is omitted
+# (member name appended). Lets `mship bootstrap` materialize this workspace from
+# a fresh clone — e.g. `mothership` -> https://github.com/atomikpanda/mothership.
+# A member on a different host/owner can override with its own `url`.
+default_remote: https://github.com/atomikpanda
+
 repos:
   mothership:
     path: mothership

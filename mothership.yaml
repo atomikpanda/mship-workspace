@@ -21,3 +21,6 @@ repos:
     type: service
     base_branch: main
     expected_branch: main
+    # Platforms `mship capture` can target (requires --platform since >1).
+    capture:
+      platforms: [android, ios]

@@ -21,6 +21,11 @@ repos:
     type: service
     base_branch: main
     expected_branch: main
+    # Source the local Android toolchain (JDK17 + SDK) before any `task` target
+    # so `mship test`/`build`/`capture` find java/adb without the dev sourcing it
+    # by hand. Guarded: a no-op when the file is absent (e.g. cloud/CI), where the
+    # ambient env is expected to provide the toolchain instead.
+    env_runner: "sh -c '[ -f \"$HOME/toolchains/android-env.sh\" ] && . \"$HOME/toolchains/android-env.sh\"; exec \"$@\"' _"
     # Platforms `mship capture` can target (requires --platform since >1).
     capture:
       platforms: [android, ios]

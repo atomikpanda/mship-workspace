@@ -7,4 +7,8 @@
 .worktrees
 .mothership/
 
+# Brainstorm visual-companion scratch + tailnet endpoint record
+.superpowers/
+.tailnet-vc.json
+
 .DS_Store

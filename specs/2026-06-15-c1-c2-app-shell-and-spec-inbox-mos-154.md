@@ -65,6 +65,7 @@ risks:
   mothership PR; app unit tests use MockEngine sample JSON so the app is not blocked,
   but live data lacks repos until that merges
 task_slug: c1-c2-app-shell-and-spec-inbox-mos-154
+work_item_id: wi-20260702110439-90c7b40b
 ---
 ## Problem
 

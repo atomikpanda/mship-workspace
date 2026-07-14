@@ -58,47 +58,80 @@ say "reinstalling mship from $MOTHERSHIP_SRC …"
 uv tool install --force --no-cache "$MOTHERSHIP_SRC" >/dev/null
 say "  tool reinstalled."
 
-# --- 4. stop serves + relay tunnels -----------------------------------------
+up_code() { [[ "$1" =~ ^(200|401)$ ]]; }   # a serve that's up is 401 (auth) or 200 on /health
+port_of() { if [[ "$1" =~ --port[[:space:]]+([0-9]+) ]]; then echo "${BASH_REMATCH[1]}"; else echo 47100; fi; }
+
+# --- 4. stop serves + ALL relay tunnels -------------------------------------
+# Clear the tunnels COMPLETELY before relaunching: sish keeps one tunnel per subdomain, so a
+# single lingering/orphaned tunnel makes it reject the fresh one → the relay 404s even though
+# the local serve is up. Loop until both the serves and their relay tunnels are gone.
 if [[ ${#CWDS[@]} -gt 0 ]]; then
   say "stopping serves + relay tunnels…"
   pkill -f 'mship serve' 2>/dev/null || true
-  pkill -f "ssh .*-R .*${RELAY_HOST}" 2>/dev/null || true   # legit + orphaned duplicate tunnels
-  for _ in $(seq 1 20); do
-    pgrep -f 'mship serve' >/dev/null 2>&1 || break
+  pkill -f "ssh .*-R .*${RELAY_HOST}" 2>/dev/null || true
+  for _ in $(seq 1 40); do
+    pgrep -f 'mship serve' >/dev/null 2>&1 || pgrep -f "ssh .*-R .*${RELAY_HOST}" >/dev/null 2>&1 || break
+    pkill -9 -f 'mship serve' 2>/dev/null || true
+    pkill -9 -f "ssh .*-R .*${RELAY_HOST}" 2>/dev/null || true
     sleep 0.5
   done
-  pkill -9 -f 'mship serve' 2>/dev/null || true
 fi
 
-# --- 5. relaunch each serve, daemonized -------------------------------------
+# --- 5. relaunch each serve, fully detached ---------------------------------
+# `setsid` (new session) + redirects to the log + </dev/null + disown so the daemon holds none
+# of this script's fds — otherwise a `… | tail` caller hangs waiting on the pipe.
 for i in "${!CWDS[@]}"; do
   cwd="${CWDS[$i]}"; flags="${FLAGS[$i]}"; name="$(basename "$cwd")"
   say "relaunching serve for $name …"
   # shellcheck disable=SC2086  # flags must word-split into args
-  ( cd "$cwd" && setsid nohup mship serve $flags >> "$LOGDIR/serve-$name.log" 2>&1 </dev/null & )
+  ( cd "$cwd" && exec setsid mship serve $flags ) >> "$LOGDIR/serve-$name.log" 2>&1 </dev/null &
+  disown 2>/dev/null || true
 done
 
-# --- 6. verify --------------------------------------------------------------
-port_of() { local f="$1"; if [[ "$f" =~ --port[[:space:]]+([0-9]+) ]]; then echo "${BASH_REMATCH[1]}"; else echo 47100; fi; }
-
+# --- 6. sweep orphan tunnels + verify local AND relay -----------------------
 if [[ ${#CWDS[@]} -gt 0 ]]; then
-  say "verifying…"
-  for _ in $(seq 1 30); do
+  say "waiting for serves to bind…"
+  for _ in $(seq 1 40); do
     up=1
     for i in "${!CWDS[@]}"; do
-      code="$(curl -s -o /dev/null -w '%{http_code}' --max-time 4 "http://127.0.0.1:$(port_of "${FLAGS[$i]}")/health" || echo 000)"
-      [[ "$code" == "401" || "$code" == "200" ]] || up=0
+      up_code "$(curl -s -o /dev/null -w '%{http_code}' --max-time 4 "http://127.0.0.1:$(port_of "${FLAGS[$i]}")/health" || echo 000)" || up=0
     done
-    [[ "$up" == "1" ]] && break
+    [[ "$up" == 1 ]] && break
     sleep 0.5
   done
+
+  # Kill any relay tunnel reparented to init (orphan/duplicate) — keep only serve-child tunnels.
+  for p in $(pgrep -f "ssh .*-R .*${RELAY_HOST}" 2>/dev/null || true); do
+    [[ "$(ps -o ppid= -p "$p" 2>/dev/null | tr -d ' ')" == "1" ]] && { say "  killing orphan tunnel pid=$p"; kill "$p" 2>/dev/null || true; }
+  done
+
+  say "verifying (local + relay)…"
   ok=1
   for i in "${!CWDS[@]}"; do
-    port="$(port_of "${FLAGS[$i]}")"; name="$(basename "${CWDS[$i]}")"
-    code="$(curl -s -o /dev/null -w '%{http_code}' --max-time 4 "http://127.0.0.1:$port/health" || echo 000)"
-    if [[ "$code" == "401" || "$code" == "200" ]]; then say "  ✓ $name (:$port) up ($code)"; else say "  ✗ $name (:$port) NOT up ($code) — see $LOGDIR/serve-$name.log"; ok=0; fi
+    name="$(basename "${CWDS[$i]}")"; port="$(port_of "${FLAGS[$i]}")"
+    lcode="$(curl -s -o /dev/null -w '%{http_code}' --max-time 4 "http://127.0.0.1:$port/health" || echo 000)"
+    # discover the subdomain this serve tunnels to <sub>:80:localhost:<port>
+    sub=""
+    for _ in $(seq 1 20); do
+      sub="$(pgrep -af "ssh .*-R .*:80:localhost:${port} .*${RELAY_HOST}" 2>/dev/null | grep -oE "[a-zA-Z0-9-]+:80:localhost:${port}" | head -1 | sed -E 's/:80.*//')"
+      [[ -n "$sub" ]] && break
+      sleep 0.5
+    done
+    rcode="no-tunnel"
+    if [[ -n "$sub" ]]; then
+      for _ in $(seq 1 10); do
+        rcode="$(curl -s -o /dev/null -w '%{http_code}' --max-time 6 "https://${sub}.${RELAY_HOST}/health" || echo 000)"
+        up_code "$rcode" && break
+        sleep 2
+      done
+    fi
+    if up_code "$lcode" && up_code "$rcode"; then
+      say "  ✓ $name  local :$port=$lcode  relay ${sub}=$rcode"
+    else
+      say "  ✗ $name  local :$port=$lcode  relay ${sub:-none}=$rcode — see $LOGDIR/serve-$name.log"; ok=0
+    fi
   done
-  [[ "$ok" == "1" ]] && say "serve redeploy complete." || { say "serve redeploy FAILED."; exit 1; }
+  [[ "$ok" == 1 ]] && say "serve redeploy complete (local + relay verified)." || { say "serve redeploy FAILED."; exit 1; }
 else
-  say "reinstall done."
+  say "reinstall done — no serves were running; start them yourself."
 fi

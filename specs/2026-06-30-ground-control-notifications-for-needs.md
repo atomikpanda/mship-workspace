@@ -1,9 +1,9 @@
 ---
 id: ground-control-notifications-for-needs
 title: Ground Control notifications for needs-you messages (self-hosted poll, FCM-ready)
-status: dispatched
+status: implemented
 created_at: '2026-06-30T21:46:31.032896Z'
-updated_at: '2026-06-30T21:59:04.593720Z'
+updated_at: '2026-07-10T23:36:07.344386Z'
 affected_repos:
 - ground-control
 acceptance_criteria:

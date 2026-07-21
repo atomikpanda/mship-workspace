@@ -1,10 +1,10 @@
 ---
 id: workitem-focused-zellij-cockpit
-title: 'WorkItem-focused zellij cockpit: mship focus + dynamic per-item tabs with
-  phase sub-tabs'
+title: 'WorkItem-focused zellij cockpit: mship layout focus + dynamic per-item tabs
+  with phase sub-tabs'
 status: needs_review
 created_at: '2026-07-21T11:11:17.171167Z'
-updated_at: '2026-07-21T11:12:19.604489Z'
+updated_at: '2026-07-21T11:20:14.413484Z'
 affected_repos:
 - mothership
 acceptance_criteria:
@@ -23,10 +23,10 @@ acceptance_criteria:
   evidence: []
   comment: null
 - id: ac3
-  text: '`mship focus <item-id>` switches to that item''s zellij tab when it already
-    exists (go-to-tab-name), else creates it (new-tab with a per-WorkItem layout,
-    named deterministically for the item, cwd = the item''s task worktree). Outside
-    a zellij session it no-ops with a clear message instead of crashing.'
+  text: '`mship layout focus <item-id>` switches to that item''s zellij tab when it
+    already exists (go-to-tab-name), else creates it (new-tab with a per-WorkItem
+    layout, named deterministically for the item, cwd = the item''s task worktree).
+    Outside a zellij session it no-ops with a clear message instead of crashing.'
   verdict: unreviewed
   evidence: []
   comment: null
@@ -48,7 +48,7 @@ acceptance_criteria:
 - id: ac6
   text: '`mship layout` gains the per-WorkItem tab template and wires an overview
     tab (`mship view queue` + `mship view items`) as the launchpad; picking an item
-    in the overview focuses its tab (composes with `mship focus`).'
+    in the overview focuses its tab (composes with `mship layout focus`).'
   verdict: unreviewed
   evidence: []
   comment: null
@@ -96,20 +96,20 @@ As an operator doing agentic engineering in zellij, I want to focus a WorkItem a
 
 ## Approach
 
-Add `mship focus <item-id>`: if a zellij tab named for that item already exists, run `zellij action go-to-tab-name`; otherwise render a per-WorkItem KDL and run `zellij action new-tab --layout-string <kdl> --name <item>`, with the tab cd'd to the item's task worktree. The per-WorkItem tab is CHAT-FIRST: a primary agent/chat pane running a configurable command (default: a shell in the worktree where the operator runs their agent — mship does not hardcode a specific agent like claude), plus explicit phase sub-tabs Plan/Dev/Review/Run whose panes are the shipped view commands with the item baked in (Plan: the item's spec + open questions; Dev: diff + journal + agent heartbeat; Review: the PR/checks + diff; Run: logs), plus an editor pane for occasional one-off edits. Rename the shipped `mship view workitem <id>` to `mship view item <id>` and add `mship view items` (the WorkItems picker/list on the master/detail foundation) so the view commands match the existing `mship item` command group. The global orchestration layer stays as the already-shipped `mship view queue` + the new `mship view items` picker, used as the overview/launchpad tab: selecting an item there fires `mship focus <id>`. Tab lifecycle: a focused item's tab is opened on focus and closed when the item reaches `done` (or via an explicit close) so tabs don't pile up. `mship layout` gains the per-WorkItem tab template and wires the overview tab. Start with explicit phase sub-tabs; auto-shaping the tab to the current phase is a later exploration.
+Add `mship layout focus <item-id>`: if a zellij tab named for that item already exists, run `zellij action go-to-tab-name`; otherwise render a per-WorkItem KDL and run `zellij action new-tab --layout-string <kdl> --name <item>`, with the tab cd'd to the item's task worktree. The per-WorkItem tab is CHAT-FIRST: a primary agent/chat pane running a configurable command (default: a shell in the worktree where the operator runs their agent — mship does not hardcode a specific agent like claude), plus explicit phase sub-tabs Plan/Dev/Review/Run whose panes are the shipped view commands with the item baked in (Plan: the item's spec + open questions; Dev: diff + journal + agent heartbeat; Review: the PR/checks + diff; Run: logs), plus an editor pane for occasional one-off edits. Rename the shipped `mship view workitem <id>` to `mship view item <id>` and add `mship view items` (the WorkItems picker/list on the master/detail foundation) so the view commands match the existing `mship item` command group. The global orchestration layer stays as the already-shipped `mship view queue` + the new `mship view items` picker, used as the overview/launchpad tab: selecting an item there fires `mship layout focus <id>`. Tab lifecycle: a focused item's tab is opened on focus and closed when the item reaches `done` (or via an explicit close) so tabs don't pile up. `mship layout` gains the per-WorkItem tab template and wires the overview tab. Start with explicit phase sub-tabs; auto-shaping the tab to the current phase is a later exploration.
 
 ## Architecture
 
-`mship focus` is a thin driver over zellij runtime actions: it resolves the item, derives a deterministic tab name, and chooses go-to-tab-name (exists) vs new-tab --layout-string (create), passing a per-WorkItem KDL and the worktree cwd. The KDL is produced by extending mship layout's existing renderer (cli/layout.py) with a per-item template; its panes are the shipped `mship view item/spec/diff/journal/queue` commands with `--item`/`--task` baked in, an editor pane, and the configurable chat/agent pane. Phase sub-tabs are static per-phase pane sets in the template. The overview tab is `mship view queue` + `mship view items`. Pure pieces (name derivation, KDL rendering, go-vs-create decision, cwd resolution) are separated from the actual zellij subprocess call so they are unit-testable without a live zellij.
+`mship layout focus` is a thin driver over zellij runtime actions: it resolves the item, derives a deterministic tab name, and chooses go-to-tab-name (exists) vs new-tab --layout-string (create), passing a per-WorkItem KDL and the worktree cwd. The KDL is produced by extending mship layout's existing renderer (cli/layout.py) with a per-item template; its panes are the shipped `mship view item/spec/diff/journal/queue` commands with `--item`/`--task` baked in, an editor pane, and the configurable chat/agent pane. Phase sub-tabs are static per-phase pane sets in the template. The overview tab is `mship view queue` + `mship view items`. Pure pieces (name derivation, KDL rendering, go-vs-create decision, cwd resolution) are separated from the actual zellij subprocess call so they are unit-testable without a live zellij.
 
 ## Interaction model
 
-The overview tab (queue + items picker) is the launchpad and cross-WorkItem awareness. You pick an item there (or run `mship focus <id>`) -> its dedicated tab opens or you jump to it. Inside the tab, the agent conversation is the primary pane (you direct the agent), you flip the explicit phase sub-tabs (Plan/Dev/Review/Run) to change the ambient context, and the editor pane is there for one-off edits/config/review. Switching WorkItems is switching zellij tabs (native muscle-memory) or via `mship focus` / the overview. Phase still appears globally as the queue's triage buckets (needs-review = review, blocked = dev), and per-WorkItem as the sub-tab you are on.
+The overview tab (queue + items picker) is the launchpad and cross-WorkItem awareness. You pick an item there (or run `mship layout focus <id>`) -> its dedicated tab opens or you jump to it. Inside the tab, the agent conversation is the primary pane (you direct the agent), you flip the explicit phase sub-tabs (Plan/Dev/Review/Run) to change the ambient context, and the editor pane is there for one-off edits/config/review. Switching WorkItems is switching zellij tabs (native muscle-memory) or via `mship layout focus` / the overview. Phase still appears globally as the queue's triage buckets (needs-review = review, blocked = dev), and per-WorkItem as the sub-tab you are on.
 
 ## Testing
 
-The `mship focus` driver is tested by mocking the zellij action invocation and asserting: the derived tab name, the go-to-vs-create decision (given a fake list of existing tab names), the resolved cwd (the item's task worktree), and the emitted per-WorkItem KDL (panes/commands/phase sub-tabs). The per-WorkItem KDL renderer is unit-tested like the existing layout renderer (quoting, pane commands). The `mship view workitem`->`mship view item` rename + `mship view items` picker are covered by the existing view test suites + the registration test (`queue`/`item`/`items` in `view --help`). Graceful-degrade-outside-zellij is asserted (no crash, clear message).
+The `mship layout focus` driver is tested by mocking the zellij action invocation and asserting: the derived tab name, the go-to-vs-create decision (given a fake list of existing tab names), the resolved cwd (the item's task worktree), and the emitted per-WorkItem KDL (panes/commands/phase sub-tabs). The per-WorkItem KDL renderer is unit-tested like the existing layout renderer (quoting, pane commands). The `mship view workitem`->`mship view item` rename + `mship view items` picker are covered by the existing view test suites + the registration test (`queue`/`item`/`items` in `view --help`). Graceful-degrade-outside-zellij is asserted (no crash, clear message).
 
 ## Rollout
 
-Independently shippable steps: (1) rename `mship view workitem` -> `mship view item` (+ deprecation alias) and add the `mship view items` picker; (2) the per-WorkItem KDL template + `mship focus` (go-to-or-create via zellij actions, worktree cwd, graceful degrade); (3) the chat-first + explicit phase sub-tabs wiring in the template; (4) the overview tab + tab lifecycle (close on done). Each leaves the CLI working.
+Independently shippable steps: (1) rename `mship view workitem` -> `mship view item` (+ deprecation alias) and add the `mship view items` picker; (2) the per-WorkItem KDL template + `mship layout focus` (go-to-or-create via zellij actions, worktree cwd, graceful degrade); (3) the chat-first + explicit phase sub-tabs wiring in the template; (4) the overview tab + tab lifecycle (close on done). Each leaves the CLI working.

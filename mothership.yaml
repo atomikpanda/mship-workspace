@@ -16,11 +16,17 @@ repos:
     type: service
     base_branch: main
     expected_branch: main
+    # Symlink the CodeGraph index from the main checkout into every spawned
+    # worktree so codegraph explore/query/node work there without re-indexing
+    # (read-only: never `codegraph sync` from a worktree — it rewrites the
+    # shared index). A no-op + warning if the repo isn't indexed.
+    symlink_dirs: [.codegraph]
   ground-control:
     path: ground-control
     type: service
     base_branch: main
     expected_branch: main
+    symlink_dirs: [.codegraph]
     # Source the local Android toolchain (JDK17 + SDK) before any `task` target
     # so `mship test`/`build`/`capture` find java/adb without the dev sourcing it
     # by hand. Guarded: a no-op when the file is absent (e.g. cloud/CI), where the

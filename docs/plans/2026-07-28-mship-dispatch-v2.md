@@ -15,7 +15,9 @@
 <!-- mship:task id=1 -->
 ### Task 1: Anchor attributes — `acs=` on `mship:task` anchors
 
-The current open-anchor regexes require `-->` immediately after the id, so `<!-- mship:task id=3 acs=ac2,ac5 -->` doesn't parse anywhere today. Extend both parsers to accept optional attributes, and expose the parsed attrs.
+The current open-anchor regexes require `-->` immediately after the id, so an anchor carrying attributes (`mship:task id=3 acs=ac2,ac5` in comment brackets) doesn't parse anywhere today. Extend both parsers to accept optional attributes, and expose the parsed attrs.
+
+> **Meta-note for the implementer:** this plan document is itself parsed by the anchor extractor, so every example anchor in the code blocks below is written as split Python string literals (`"<!-- mship:" "task ..."`) — they concatenate to real anchors at runtime but never appear contiguously in this file. Keep that property when editing tests.
 
 **Files:**
 - Modify: `src/mship/core/dispatch.py` (`_TASK_OPEN_RE` at line ~27, `extract_plan_task` at ~31)
@@ -28,12 +30,12 @@ The current open-anchor regexes require `-->` immediately after the id, so `<!--
 # tests/core/test_dispatch.py — add:
 from mship.core.dispatch import extract_plan_task, extract_plan_task_meta
 
-PLAN_WITH_ACS = """\
-<!-- mship:task id=3 acs=ac2,ac5 -->
-### Task 3: Thing
-body here
-<!-- /mship:task -->
-"""
+PLAN_WITH_ACS = (
+    "<!-- mship:" "task id=3 acs=ac2,ac5 -->\n"
+    "### Task 3: Thing\n"
+    "body here\n"
+    "<!-- /mship:" "task -->\n"
+)
 
 def test_extract_plan_task_ignores_attributes():
     assert "body here" in extract_plan_task(PLAN_WITH_ACS, "3")
@@ -44,7 +46,7 @@ def test_extract_plan_task_meta_returns_acs():
     assert meta == {"acs": ["ac2", "ac5"]}
 
 def test_extract_plan_task_meta_no_attrs():
-    plan = "<!-- mship:task id=1 -->\nx\n<!-- /mship:task -->"
+    plan = "<!-- mship:" "task id=1 -->\nx\n<!-- /mship:" "task -->"
     text, meta = extract_plan_task_meta(plan, "1")
     assert meta == {}
 ```
@@ -54,7 +56,7 @@ def test_extract_plan_task_meta_no_attrs():
 from mship.core.plan import plan_has_tasks
 
 def test_plan_has_tasks_with_attributes():
-    assert plan_has_tasks("<!-- mship:task id=1 acs=ac1 -->\nx\n<!-- /mship:task -->")
+    assert plan_has_tasks("<!-- mship:" "task id=1 acs=ac1 -->\nx\n<!-- /mship:" "task -->")
 ```
 
 - [ ] **Step 2: Run tests to verify they fail**
@@ -74,15 +76,15 @@ _ATTR_RE = re.compile(r"([a-z_]+)=([^\s>]+)")
 def extract_plan_task_meta(plan_text: str, task_id: str) -> tuple[str, dict]:
     """Like extract_plan_task, but also returns parsed anchor attributes.
 
-    Attributes are optional `key=value` pairs after the id, e.g.
-    `<!-- mship:task id=3 acs=ac2,ac5 -->`. `acs` is split on commas into a
-    list. Unknown keys pass through as raw strings (forward-compatible).
+    Attributes are optional `key=value` pairs after the id (e.g. an anchor
+    of the form mship:task id=3 acs=ac2,ac5). `acs` is split on commas into
+    a list. Unknown keys pass through as raw strings (forward-compatible).
     """
     opens = [m for m in _TASK_OPEN_RE.finditer(plan_text) if m.group(1) == task_id]
     if not opens:
         raise ValueError(
             f"no task with id {task_id!r} in plan "
-            f"(expected an anchor `<!-- mship:task id={task_id} -->`)"
+            f"(expected an anchor mship:task id={task_id})"
         )
     if len(opens) > 1:
         raise ValueError(f"duplicate task id {task_id!r} in plan ({len(opens)} anchors)")
@@ -92,7 +94,7 @@ def extract_plan_task_meta(plan_text: str, task_id: str) -> tuple[str, dict]:
     if close_m is None or (next_open is not None and next_open.start() < close_m.start()):
         raise ValueError(
             f"unterminated task block for id {task_id!r} "
-            f"(missing closing `<!-- /mship:task -->`)"
+            f"(missing the closing /mship:task anchor)"
         )
     meta: dict = {}
     for k, v in _ATTR_RE.findall(open_m.group(2) or ""):

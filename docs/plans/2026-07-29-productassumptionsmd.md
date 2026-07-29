@@ -273,7 +273,7 @@ def _app(tmp_path):
 def test_check_assumptions_reports_missing(tmp_path):
     plans = tmp_path / "docs" / "plans"; plans.mkdir(parents=True)
     (plans / "2026-07-29-x.md").write_text(
-        "<!-- mship:task id=1 -->\n## Assumptions checked\n- repo topology — meta\n"
+        "## Assumptions checked\n- repo topology — meta\n"
     )
     runner = CliRunner()
     res = runner.invoke(_app(tmp_path), ["plan", "check-assumptions", "--plan", str(plans / "2026-07-29-x.md")])

@@ -23,6 +23,7 @@ All paths relative to `/home/bailey/development/repos/mship-workspace/mothership
 - `pyproject.toml` — add `mshipd = "mship.core.daemon.run:main"` to `[project.scripts]` (one line; `uv tool install` exposes it beside `mship` from the same dist)
 - Tests: `tests/core/daemon/test_{paths,lease,history,control,run,units,supervisor,status}.py`, `tests/cli/test_daemon.py`; manual checklist in `docs/daemon.md`
 
+<!-- mship:task id=1 -->
 ## Task 1 — Daemon paths + single-instance lease
 
 **Failing tests first** — `tests/core/daemon/test_paths.py`:
@@ -37,6 +38,9 @@ All paths relative to `/home/bailey/development/repos/mship-workspace/mothership
 
 **Implement** — `src/mship/core/daemon/paths.py` as above. `src/mship/core/daemon/lease.py`: `DaemonLease` — flock idiom from `core/state.py:64 _locked` / `core/inbox_lease.py:49`, but the flock (`LOCK_EX | LOCK_NB` on the lease fd) is **held for the process lifetime**, never released until exit. **Never replace the locked file**: open `lease_path` once with `os.open(path, O_RDWR | O_CREAT, 0o600)`, flock that fd, then write the JSON **through the same fd** (`ftruncate(0)` + write + fsync). The tmp+`os.replace` pattern is explicitly wrong here — `os.replace` swaps the inode, stranding the lifetime flock on the old unlinked inode so every later acquirer flocks the new file and succeeds, voiding the single-instance guard. `try_acquire()` returns `None` on win or the holder's `LeaseInfo`; **loser contract:** on flock failure, retry the record read briefly (a few 10 ms attempts — the winner may still be mid-write through its fd), and if still unreadable return `LeaseInfo(pid=None, ...)` meaning "held by unknown". `lease_common.is_reclaimable` (`core/lease_common.py:18`) is reused only for the crashed-holder diagnostic message, not the liveness decision. The lease JSON doubles as the runtime record — no separate record file.
 
+<!-- /mship:task -->
+
+<!-- mship:task id=2 -->
 ## Task 2 — Start history + crash-loop detector (OS-agnostic visibility)
 
 **Failing tests first** — `tests/core/daemon/test_history.py`:
@@ -45,6 +49,9 @@ All paths relative to `/home/bailey/development/repos/mship-workspace/mothership
 
 **Implement** — `src/mship/core/daemon/history.py`. Same 0600 atomic-write pattern as `run_host/store.py:63-81` (safe here — nothing flocks this file). This is the crash-loop detector — daemon-owned so it behaves identically under systemd, launchd, and `daemon run`; no `NRestarts`/`launchctl print` parsing. Status renders the count as "N unclean starts in last 10m", not a bare binary. The clean-stop entry is written by `run.py` when `uvicorn.run` returns normally (graceful SIGTERM shutdown) — no bespoke signal code.
 
+<!-- /mship:task -->
+
+<!-- mship:task id=3 -->
 ## Task 3 — Control app + version identity + socket probe
 
 **Failing tests first** — `tests/core/daemon/test_control.py` (FastAPI `TestClient`, pattern of `tests/core/test_serve.py`):
@@ -54,6 +61,9 @@ All paths relative to `/home/bailey/development/repos/mship-workspace/mothership
 
 **Implement** — `src/mship/core/daemon/control.py`: `create_control_app(*, started_at, version, socket_path) -> FastAPI` — tiny pure closure factory in the style of `create_app` (`core/serve.py:277`), ~40 lines, one route — plus `probe_control_socket(socket_path, client_factory=...) -> dict | None` (client side of the same socket contract; reused by Task 4's loser path and Task 7's status). `version` is **`mship.__version__` captured once by the caller at process start** — the repo's guarded single source of truth (`src/mship/__init__.py`, pinned to pyproject by `tests/test_version.py`). Do **not** use `topology._mship_version()`/importlib.metadata here: both sides returning "unknown" on absent dist metadata would mask real skew, and it is a private helper of another module (the topology/diagnostics near-duplication is pre-existing — flag, don't refactor). `PROTOCOL = 1` module constant. Each `false` capability carries a one-line comment naming its issue (#471/#472/#473) — these are the seams.
 
+<!-- /mship:task -->
+
+<!-- mship:task id=4 -->
 ## Task 4 — `mshipd` entrypoint + run loop
 
 **Failing tests first** — `tests/core/daemon/test_run.py`:
@@ -69,6 +79,9 @@ All paths relative to `/home/bailey/development/repos/mship-workspace/mothership
 
 **Implement** — `src/mship/core/daemon/run.py`, **import-minimal at module top** (stdlib + `paths`/`lease`/`history` only; the FastAPI/uvicorn/control imports are deferred to inside `main()` after the history append, so a broken-upgrade `ImportError` still lands in history and the rotating log). `main() -> int`: configure rotating logs (+ uvicorn loggers, + log-and-re-raise wrapper for uncaught exceptions) → `DaemonLease.try_acquire()`; **loser path:** retry the flock briefly, then `probe_control_socket` at the lease-recorded `socket_path` — holder live → log holder pid, return 0; holder never answers → log contended-but-dead, return 1 → winner: `append_start` → unlink stale socket → deferred imports → `uvicorn.run(create_control_app(...), uds=..., log_config=None)` → on normal return, `append_clean_stop`. SIGTERM: rely on uvicorn's default graceful shutdown — no bespoke signal code. `__main__.py` calls `main()` (`python -m mship.core.daemon` fallback, matching the `python -m mship.ci.version_bump` precedent). Add the `[project.scripts]` line; `tests/test_version.py` untouched.
 
+<!-- /mship:task -->
+
+<!-- mship:task id=5 -->
 ## Task 5 — Unit/plist rendering + exec resolution (crash-restart policy lives here)
 
 **Failing tests first** — `tests/core/daemon/test_units.py` (rendered to `tmp_path`, then **parsed, not substring-matched** — systemd directives are section-scoped and a directive in the wrong section is silently ignored with only an "Unknown lvalue" journal line, so flat `in` assertions would pass CI while the backoff policy is broken on the host):
@@ -80,6 +93,9 @@ All paths relative to `/home/bailey/development/repos/mship-workspace/mothership
 
 **Implement** — `src/mship/core/daemon/units.py`: `resolve_mshipd_argv(which=shutil.which) -> list[str]` (sibling-first → prefix-verified which → `-m` fallback; typed error on unverifiable resolution), `render_systemd_unit(argv) -> str`, `render_launchd_plist(argv, log_dir) -> str`. Heredoc-style constants, following the `scripts/relay-bootstrap.sh:~27` precedent (the repo's only unit-generation prior art). Target paths: `~/.config/systemd/user/mship-daemon.service`, `~/Library/LaunchAgents/com.mothership.daemon.plist`.
 
+<!-- /mship:task -->
+
+<!-- mship:task id=6 -->
 ## Task 6 — Supervisor adapter (single injectable boundary for systemctl/launchctl/loginctl)
 
 **Failing tests first** — `tests/core/daemon/test_supervisor.py` with a recorder fake for `run_cmd` (the `_run_uvicorn`-style seam documented in `tests/cli/test_relay_enroll_server.py`):
@@ -93,6 +109,9 @@ All paths relative to `/home/bailey/development/repos/mship-workspace/mothership
 
 **Implement** — `src/mship/core/daemon/supervisor.py`: `SystemdUserSupervisor` / `LaunchdSupervisor`, both taking `run_cmd: Callable = subprocess.run` and `which: Callable = shutil.which`; `pick_supervisor(platform=sys.platform)` factory. **Every** OS-supervisor invocation in the daemon feature goes through this one boundary.
 
+<!-- /mship:task -->
+
+<!-- mship:task id=7 -->
 ## Task 7 — Status assembly (skew, crash loop, linger, socket probe)
 
 **Failing tests first** — `tests/core/daemon/test_status.py` (all inputs injected, pattern of `tests/cli/test_status.py`):
@@ -105,6 +124,9 @@ All paths relative to `/home/bailey/development/repos/mship-workspace/mothership
 
 **Implement** — `src/mship/core/daemon/status.py`: `build_status(...) -> DaemonStatus` (dataclass) reusing `probe_control_socket` from `control.py` (Task 3), and `restart_blockers() -> list[str]` returning `[]` with a docstring naming it the #473 recovery gate. The lease file is **read-only JSON diagnostics** on this path — never opened for locking.
 
+<!-- /mship:task -->
+
+<!-- mship:task id=8 -->
 ## Task 8 — `mship daemon` CLI
 
 **Failing tests first** — `tests/cli/test_daemon.py` (CliRunner against an isolated `typer.Typer()` with `daemon_mod.register(app, lambda required=True: None)`, model `tests/cli/test_relay_enroll_server.py`; monkeypatch `pick_supervisor` to a recording fake):
@@ -118,11 +140,16 @@ All paths relative to `/home/bailey/development/repos/mship-workspace/mothership
 
 **Implement** — `src/mship/cli/daemon.py`: thin Typer sub-app following the house `register(app, get_container)` shape (e.g. `src/mship/cli/serve.py:53`); `get_container` accepted but **never resolved into a workspace** (comment says so — daemon is workspace-agnostic). Wire into the register list in `src/mship/cli/__init__.py`. `typer.Exit(1)` at this layer only; core raises typed exceptions. Output via existing `Output` conventions.
 
+<!-- /mship:task -->
+
+<!-- mship:task id=9 -->
 ## Task 9 — Docs + manual verification checklist
 
 No test. `docs/daemon.md`: lifecycle commands, why linger is mandatory, log/socket/lease paths, the loser-exits-0 policy and why (launchd semantics), and the **manual/VM checklist** for the OS-contract ACs the suite cannot exercise (per the test-recon boundary): survives SSH disconnect + logout (real linger); returns after `kill -9` within `RestartSec` and after reboot; real `systemd --user`/launchd start — **including `mship daemon install` over SSH to a Mac with no GUI session** (the `user/<uid>` bootstrap path); crash loop trips `start-limit-hit` and `mship daemon status` shows it; upgrade (`uv tool install --force --no-cache <path>`) then `mship daemon restart` runs the new version, with `status` showing skew before and clean after. Document the macOS caveat: reboot-survival on a headless Mac requires a login session (auto-login); a LaunchDaemon is out of scope. Note explicitly that merging does not deploy (the `redeploy-serve.sh` reality) and `mship daemon restart` is the daemon's deploy step. One line in `docs/getting-started.md`: the install now also provides `mshipd`, managed via `mship daemon`, never invoked directly.
 
 Run `mship test` after the final commit (finish-gate evidence staleness, PR #445).
+
+<!-- /mship:task -->
 
 ## Reused symbols (no new owners created)
 

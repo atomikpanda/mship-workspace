@@ -12,3 +12,6 @@
 .tailnet-vc.json
 
 .DS_Store
+
+# Generated task export bundles.
+/*-export/

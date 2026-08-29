@@ -2,9 +2,9 @@
 id: mship-view-needs-a-major-overhaul-to
 title: mship view needs a major overhaul to bring it into parity with ground control.
   b
-status: dispatched
+status: implemented
 created_at: '2026-07-20T21:05:56.570486Z'
-updated_at: '2026-07-20T21:23:29.158509Z'
+updated_at: '2026-07-21T10:24:17.371012Z'
 affected_repos:
 - mothership
 acceptance_criteria:
@@ -13,40 +13,76 @@ acceptance_criteria:
     of the current branch/worktree: a spec that exists only on main (not checked out
     in the current pane''s worktree) still renders.'
   verdict: approved
-  evidence: []
+  evidence:
+  - kind: test
+    ref: test-runs/1.mothership
+    note: null
+  - kind: commit
+    ref: bacdfab
+    note: canonical read ignores worktrees
   comment: null
 - id: ac2
   text: '`mship view spec` can select a spec by WorkItem or by status (e.g. by workitem
     id, or status=needs_review) instead of newest-file mtime guessing; with no args
     it uses a deterministic, documented default.'
   verdict: approved
-  evidence: []
+  evidence:
+  - kind: test
+    ref: test-runs/1.mothership
+    note: null
+  - kind: commit
+    ref: 67ab302
+    note: spec selection layer
   comment: null
 - id: ac3
   text: '`mship view workitem <id>` renders a single-WorkItem cockpit: its spec (status
     + phase), acceptance criteria with their evidence, its tasks + worktrees, and
     its linked PRs + threads, all sourced from the canonical store.'
   verdict: approved
-  evidence: []
+  evidence:
+  - kind: test
+    ref: test-runs/1.mothership
+    note: null
+  - kind: commit
+    ref: f98a788
+    note: cockpit assembly + view + command
   comment: null
 - id: ac4
   text: '`mship view queue` lists cross-workspace attention items - specs in needs_review,
     blocked tasks, and PRs awaiting action - each selectable/navigable.'
   verdict: approved
-  evidence: []
+  evidence:
+  - kind: test
+    ref: test-runs/1.mothership
+    note: null
+  - kind: commit
+    ref: 11c8b3e
+    note: queue assembly
   comment: null
 - id: ac5
   text: '`mship view status` groups tasks under their WorkItem and shows each task''s
     phase.'
   verdict: approved
-  evidence: []
+  evidence:
+  - kind: test
+    ref: test-runs/1.mothership
+    note: null
+  - kind: commit
+    ref: c8d0003
+    note: status WorkItem grouping
   comment: null
 - id: ac6
   text: 'The list-style views (workitem, queue, spec picker) support master/detail
     keyboard navigation: j/k move the selection, enter drills into the selected entity,
     tab switches focus between list and detail, and / filters the list.'
   verdict: approved
-  evidence: []
+  evidence:
+  - kind: test
+    ref: test-runs/1.mothership
+    note: null
+  - kind: commit
+    ref: 792e4f3
+    note: master/detail foundation
   comment: null
 - id: ac7
   text: From queue/spec/workitem, the approve action moves the selected needs_review
@@ -54,20 +90,44 @@ acceptance_criteria:
     prompts for a reason and moves the spec to draft - both routed through the same
     store path the serve uses.
   verdict: approved
-  evidence: []
+  evidence:
+  - kind: test
+    ref: test-runs/1.mothership
+    note: null
+  - kind: test
+    ref: test-runs/1.mothership
+    note: null
+  - kind: commit
+    ref: 8339f13
+    note: shared approve/request-changes seam
   comment: null
 - id: ac8
   text: Navigation actions move between linked entities without leaving the view (WorkItem
     -> its spec -> its thread -> its PR), and open-in-browser / copy-ref actions operate
     on the selected entity.
   verdict: approved
-  evidence: []
+  evidence:
+  - kind: test
+    ref: test-runs/1.mothership
+    note: null
+  - kind: test
+    ref: test-runs/1.mothership
+    note: null
+  - kind: commit
+    ref: f5fe6b6
+    note: action hooks + open/copy
   comment: null
 - id: ac9
   text: '`mship view journal` and `mship view diff` keep their current behavior but
     gain a WorkItem/phase-aware header.'
   verdict: approved
-  evidence: []
+  evidence:
+  - kind: test
+    ref: test-runs/1.mothership
+    note: null
+  - kind: commit
+    ref: 9647b64
+    note: WorkItem/phase headers
   comment: null
 open_questions: []
 non_goals:

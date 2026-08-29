@@ -2,9 +2,9 @@
 id: mship-dispatch-v2
 title: 'mship dispatch v2: model resolution, structured briefs, and context-isolated
   handoff'
-status: approved
+status: implemented
 created_at: '2026-07-28T12:41:27.387986Z'
-updated_at: '2026-07-28T13:16:42.243693Z'
+updated_at: '2026-07-28T16:40:50.507649Z'
 affected_repos:
 - mothership
 acceptance_criteria:
@@ -14,7 +14,10 @@ acceptance_criteria:
     model appears explicitly in the emitted stub and prompt; unit tests cover all
     three precedence levels.'
   verdict: approved
-  evidence: []
+  evidence:
+  - kind: test
+    ref: test-runs/2.mothership
+    note: null
   comment: null
 - id: ac2
   text: "A dispatch persists a metadata-only JSON record under `.mothership/sdd/<work-item-id>/<task-slug>/`\
@@ -23,7 +26,10 @@ acceptance_criteria:
     \ test asserting the record lacks the plan body while the emitted prompt contains\
     \ it."
   verdict: approved
-  evidence: []
+  evidence:
+  - kind: test
+    ref: test-runs/2.mothership
+    note: null
   comment: null
 - id: ac3
   text: "The full prompt is derived at emit time from the canonical plan slice wrapped\
@@ -34,27 +40,39 @@ acceptance_criteria:
     \ no acceptance text, no subagent-only prompt content of any kind. Editing the\
     \ plan changes the next emit without touching the store."
   verdict: approved
-  evidence: []
+  evidence:
+  - kind: test
+    ref: test-runs/2.mothership
+    note: null
   comment: null
 - id: ac4
   text: Review-package generation stores a JSON manifest plus raw `git diff` files
     for the task's commit range in the same keyed directory, and the emitted reviewer
     prompt references those file paths instead of embedding the diff.
   verdict: approved
-  evidence: []
+  evidence:
+  - kind: test
+    ref: test-runs/2.mothership
+    note: null
   comment: null
 - id: ac5
   text: "No rendered markdown is persisted anywhere under `.mothership/sdd/` \u2014\
     \ the store is metadata JSON plus diff blobs, with markdown emitted to stdout\
     \ on demand."
   verdict: approved
-  evidence: []
+  evidence:
+  - kind: test
+    ref: test-runs/2.mothership
+    note: null
   comment: null
 - id: ac6
   text: '`mship close` removes the task''s `.mothership/sdd/` records as part of worktree
     teardown, and a test proves a closed task leaves no orphan store directory.'
   verdict: approved
-  evidence: []
+  evidence:
+  - kind: test
+    ref: test-runs/2.mothership
+    note: null
   comment: null
 - id: ac7
   text: A plan task anchor may declare `acs=<id,...>`; implementer and reviewer emits
@@ -63,13 +81,19 @@ acceptance_criteria:
     prompts but in neither the plan body, the dispatch record, nor the review-package
     manifest.
   verdict: approved
-  evidence: []
+  evidence:
+  - kind: test
+    ref: test-runs/2.mothership
+    note: null
   comment: null
 - id: ac8
   text: '`tests/skills/test_skill_dispatch_ergonomics.py` is extended to assert the
     new capabilities and passes alongside the existing suite.'
   verdict: approved
-  evidence: []
+  evidence:
+  - kind: test
+    ref: test-runs/2.mothership
+    note: null
   comment: null
 open_questions: []
 non_goals:

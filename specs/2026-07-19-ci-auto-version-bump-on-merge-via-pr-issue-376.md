@@ -1,9 +1,9 @@
 ---
 id: ci-auto-version-bump-on-merge-via-pr-issue-376
 title: CI auto version-bump on merge via PR label (issue 376)
-status: dispatched
+status: implemented
 created_at: '2026-07-19T20:44:17.773772Z'
-updated_at: '2026-07-19T21:00:42.353992Z'
+updated_at: '2026-07-20T01:01:34.548309Z'
 affected_repos:
 - mothership
 acceptance_criteria:
@@ -12,14 +12,29 @@ acceptance_criteria:
     for level minor (patch digit zeroed), and 1.0.0 for level major (minor and patch
     digits zeroed).
   verdict: approved
-  evidence: []
+  evidence:
+  - kind: test
+    ref: test-runs/1.mothership
+    note: null
+  - kind: commit
+    ref: caf864b
+    note: bump_version semver math
+  - kind: test
+    ref: test-runs/1.mothership
+    note: null
   comment: null
 - id: ac2
   text: 'Given a set of PR labels, the helper selects the bump level by precedence
     major > minor > patch: {semver:minor} -> minor, {semver:patch, semver:minor} ->
     minor, {} -> patch (default), {semver:major, semver:patch} -> major.'
   verdict: approved
-  evidence: []
+  evidence:
+  - kind: test
+    ref: test-runs/1.mothership
+    note: null
+  - kind: commit
+    ref: 1d6b8ff
+    note: select_level label precedence
   comment: null
 - id: ac3
   text: The helper rewrites the version in BOTH pyproject.toml (project.version) and
@@ -27,14 +42,26 @@ acceptance_criteria:
     line in each file byte-for-byte unchanged, so the existing tests/test_version.py
     drift guard still passes after a bump.
   verdict: approved
-  evidence: []
+  evidence:
+  - kind: test
+    ref: test-runs/1.mothership
+    note: null
+  - kind: commit
+    ref: 88a0468
+    note: dual-file rewrite
   comment: null
 - id: ac4
   text: A malformed or missing current version line makes the helper exit non-zero
     and leave both files unmodified, rather than writing a corrupt or half-updated
     version.
   verdict: approved
-  evidence: []
+  evidence:
+  - kind: test
+    ref: test-runs/1.mothership
+    note: null
+  - kind: commit
+    ref: 88a0468
+    note: fail-safe on malformed version
   comment: null
 - id: ac5
   text: 'The workflow file exists at .github/workflows/version-bump.yml, triggers
@@ -42,14 +69,26 @@ acceptance_criteria:
     contents: write permission and a concurrency group, and its bump commit message
     contains [skip ci].'
   verdict: approved
-  evidence: []
+  evidence:
+  - kind: test
+    ref: test-runs/1.mothership
+    note: null
+  - kind: commit
+    ref: c7d1518
+    note: workflow file
   comment: null
 - id: ac6
   text: On a merged PR the workflow writes the new version to pyproject.toml, commits
     it to main, and creates and pushes an annotated tag named v<new-version> matching
     the bumped version.
   verdict: approved
-  evidence: []
+  evidence:
+  - kind: test
+    ref: test-runs/1.mothership
+    note: null
+  - kind: commit
+    ref: c7d1518
+    note: commit+tag+push steps
   comment: null
 open_questions: []
 non_goals:

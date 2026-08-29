@@ -2,9 +2,9 @@
 id: re-vendor-superpowers-620-with-mship
 title: Re-vendor superpowers 6.2.0 with mship deltas re-woven and a durable VENDOR.md
   ledger
-status: needs_review
+status: implemented
 created_at: '2026-07-28T12:41:28.140845Z'
-updated_at: '2026-07-28T12:41:35.822385Z'
+updated_at: '2026-07-28T18:58:35.304188Z'
 affected_repos:
 - mothership
 acceptance_criteria:
@@ -14,8 +14,11 @@ acceptance_criteria:
     present; `spec-reviewer-prompt.md`, `code-quality-reviewer-prompt.md`, `testing-anti-patterns.md`
     absent; `writing-good-tests.md` present), and upstream''s three SDD shell scripts
     are absent with no `.superpowers/` path referenced anywhere in the tree.'
-  verdict: unreviewed
-  evidence: []
+  verdict: approved
+  evidence:
+  - kind: test
+    ref: test-runs/5.mothership
+    note: null
   comment: null
 - id: ac2
   text: 'Every ledgered mship delta is re-woven and covered: worktree routing through
@@ -25,41 +28,59 @@ acceptance_criteria:
     on the new structure referencing `mship dispatch` briefs/review-packages/model
     resolution, and `mship debug` integration in systematic-debugging and test-driven-development
     with the anti-patterns pointer updated to `writing-good-tests.md`.'
-  verdict: unreviewed
-  evidence: []
+  verdict: approved
+  evidence:
+  - kind: test
+    ref: test-runs/5.mothership
+    note: null
   comment: null
 - id: ac3
   text: '`VENDOR.md` exists at `src/mship/skills/` declaring base 6.2.0 and per-skill
     deltas with rationale, and a guard test fails if a vendored file differs from
     upstream 6.2.0 without a VENDOR.md entry naming it.'
-  verdict: unreviewed
-  evidence: []
+  verdict: approved
+  evidence:
+  - kind: test
+    ref: test-runs/5.mothership
+    note: null
   comment: null
 - id: ac4
   text: '`THIRD_PARTY_LICENSES.md` declares superpowers 6.2.0 in the same PR.'
-  verdict: unreviewed
-  evidence: []
+  verdict: approved
+  evidence:
+  - kind: test
+    ref: test-runs/5.mothership
+    note: null
   comment: null
 - id: ac5
   text: The four original skills are byte-identical to before the re-vendor, except
     `using-mothership`'s platform-adaptation references point at files that exist
     in the new tree (upstream deleted `copilot-tools.md`).
-  verdict: unreviewed
-  evidence: []
+  verdict: approved
+  evidence:
+  - kind: test
+    ref: test-runs/5.mothership
+    note: null
   comment: null
 - id: ac6
   text: The full `tests/skills/` suite passes, extended with guards asserting no `superpowers:`
     namespace prefix, no un-hyphenated `Ultrathink` keyword, and no `.superpowers/`
     path survives in the vendored tree; `mship skill list` and `mship skill install`
     smoke-tested against the new tree.
-  verdict: unreviewed
-  evidence: []
+  verdict: approved
+  evidence:
+  - kind: test
+    ref: test-runs/5.mothership
+    note: null
   comment: null
 - id: ac7
   text: 'GitHub issue #437 is closed manually after the PR merges (auto-close never
     touches source issues), with a comment linking both specs'' PRs.'
-  verdict: unreviewed
-  evidence: []
+  verdict: approved
+  evidence:
+  - kind: test
+    ref: test-runs/5.mothership
+    note: null
   comment: null
 open_questions: []
 non_goals:

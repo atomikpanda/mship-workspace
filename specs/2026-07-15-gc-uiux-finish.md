@@ -4,7 +4,7 @@ title: 'GC UI/UX finish: Home leads with needs-you queue + spec-detail readiness
   action hierarchy'
 status: approved
 created_at: '2026-07-15T19:02:23.548765Z'
-updated_at: '2026-07-15T19:13:27.698708Z'
+updated_at: '2026-07-15T19:44:46.937052Z'
 affected_repos:
 - ground-control
 acceptance_criteria:
@@ -12,50 +12,80 @@ acceptance_criteria:
   text: "Home renders the 'Needs you \xB7 N' section with a visible count as the first\
     \ content block, above the workspace rail and threads card."
   verdict: approved
-  evidence: []
+  evidence:
+  - kind: commit
+    ref: 9507bc532459a0fd027e24920ad6499bb778fabc
+    note: Needs-you section inserted as leading content block (above threads card)
   comment: null
 - id: ac2
   text: The 'Needs you' section exposes a control that navigates to the Queue tab
     when tapped, and its label reflects the count (e.g. 'Review 3 in Queue').
   verdict: approved
-  evidence: []
+  evidence:
+  - kind: commit
+    ref: 9507bc532459a0fd027e24920ad6499bb778fabc
+    note: onReviewInQueue wired to Section.QUEUE; label from reviewInQueueCta
+  - kind: test
+    ref: test-runs/1.ground-control
+    note: 'HomeStringsTest: cta reflects count'
   comment: null
 - id: ac3
   text: When there are zero attention items, the 'Needs you' section shows a caught-up/empty
     state and offers no Queue-review action.
   verdict: approved
-  evidence: []
+  evidence:
+  - kind: test
+    ref: test-runs/1.ground-control
+    note: 'HomeStringsTest: zero -> caught-up, cta null'
   comment: null
 - id: ac4
   text: The workspace rail and threads card still render, positioned below the 'Needs
     you' section.
   verdict: approved
-  evidence: []
+  evidence:
+  - kind: commit
+    ref: 9507bc532459a0fd027e24920ad6499bb778fabc
+    note: Rail stays top; threads card + notes render below needs-you
   comment: null
 - id: ac5
   text: The spec-detail screen shows the acceptance-criteria readiness summary as
     colored counter chips (approved / flagged / unanswered) near the top, using the
     semantic colors.
   verdict: approved
-  evidence: []
+  evidence:
+  - kind: commit
+    ref: 180a2983492418e3d290d4162f7068add23dfed8
+    note: ReadinessChipsRow replaces buried summary line
+  - kind: test
+    ref: test-runs/1.ground-control
+    note: 'ReadinessTest: chip descriptors + roles'
   comment: null
 - id: ac6
   text: On spec-detail, Approve is a single filled primary action gated by a light
     confirmation step before it commits.
   verdict: approved
-  evidence: []
+  evidence:
+  - kind: commit
+    ref: ae3b57097692c0135136c8fa8a3c94acb85b5d3c
+    note: Approve gated by light ConfirmDialog
   comment: null
 - id: ac7
   text: On spec-detail, 'Plan implementation' renders as a secondary/tonal action,
     visually subordinate to Approve.
   verdict: approved
-  evidence: []
+  evidence:
+  - kind: commit
+    ref: ae3b57097692c0135136c8fa8a3c94acb85b5d3c
+    note: Plan-implementation -> FilledTonalButton (secondary)
   comment: null
 - id: ac8
   text: On spec-detail, the bare caret is replaced by a labeled overflow affordance
     that exposes the secondary actions including 'Approve anyway'.
   verdict: approved
-  evidence: []
+  evidence:
+  - kind: commit
+    ref: ae3b57097692c0135136c8fa8a3c94acb85b5d3c
+    note: Caret -> labeled MoreVert overflow (contentDescription)
   comment: null
 open_questions: []
 non_goals:

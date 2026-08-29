@@ -2,9 +2,9 @@
 id: workspace-registry-472
 title: 'Workspace registry: workspace as an explicit parameter, not ambient state
   (#472)'
-status: needs_review
+status: implemented
 created_at: '2026-08-17T01:28:50.932979Z'
-updated_at: '2026-08-17T01:29:41.979447Z'
+updated_at: '2026-08-18T12:25:48.649809Z'
 affected_repos:
 - mothership
 - ground-control
@@ -13,43 +13,79 @@ acceptance_criteria:
   text: 'A scan root containing two valid mothership.yaml workspaces: a newly started
     daemon discovers and serves both without mship workspace add (end-to-end over
     the TCP bind seeded by mship daemon install --scan-root ... --serve HOST:PORT)'
-  verdict: unreviewed
-  evidence: []
+  verdict: approved
+  evidence:
+  - kind: test
+    ref: test-runs/3.ground-control
+    note: null
+  - kind: test
+    ref: test-runs/3.mothership
+    note: null
   comment: null
 - id: ac2
   text: Scan roots are bounded and configurable; empty config scans nothing; the daemon
     never crawls the filesystem by default
-  verdict: unreviewed
-  evidence: []
+  verdict: approved
+  evidence:
+  - kind: test
+    ref: test-runs/3.ground-control
+    note: null
+  - kind: test
+    ref: test-runs/3.mothership
+    note: null
   comment: null
 - id: ac3
   text: Overlapping scan roots, duplicate-listed roots, and roots nested inside another
     root's workspace collapse to one registry entry (resolved-path dedupe + ancestor/descendant
     collapse, outermost wins)
-  verdict: unreviewed
-  evidence: []
+  verdict: approved
+  evidence:
+  - kind: test
+    ref: test-runs/3.ground-control
+    note: null
+  - kind: test
+    ref: test-runs/3.mothership
+    note: null
   comment: null
 - id: ac4
   text: .worktrees/ and .mothership/ are mandatory exclusions; a spawned task worktree
     with an inherited tracked mothership.yaml can never register; hand-made linked
     worktrees outside .worktrees/ are detected (.git-is-a-file / marker) and excluded
-  verdict: unreviewed
-  evidence: []
+  verdict: approved
+  evidence:
+  - kind: test
+    ref: test-runs/3.ground-control
+    note: null
+  - kind: test
+    ref: test-runs/3.mothership
+    note: null
   comment: null
 - id: ac5
   text: Invalid or unreadable mothership.yaml degrades visibly with the validation
     error; a parseable yaml whose repo paths all do not exist (template/example) degrades
     too; siblings still discover; the scan never aborts and the daemon never crashes
     on a bad candidate
-  verdict: unreviewed
-  evidence: []
+  verdict: approved
+  evidence:
+  - kind: test
+    ref: test-runs/3.ground-control
+    note: null
+  - kind: test
+    ref: test-runs/3.mothership
+    note: null
   comment: null
 - id: ac6
   text: The daemon serves at least two workspaces concurrently, addressed by stable
     workspace id in the URL, with distinct per-workspace state and no cross-workspace
     data bleed; degraded ids return 503 with the stored reason, unknown ids 404
-  verdict: unreviewed
-  evidence: []
+  verdict: approved
+  evidence:
+  - kind: test
+    ref: test-runs/3.ground-control
+    note: null
+  - kind: test
+    ref: test-runs/3.mothership
+    note: null
   comment: null
 - id: ac7
   text: No daemon serve code path reads cwd or inherited env to determine workspace,
@@ -57,57 +93,105 @@ acceptance_criteria:
     every recorded subprocess cwd under the real workspace; PrWatcher sweep driven
     through merge-close reconciliation) AND a static AST sweep over the import-graph-derived
     module set with detector self-tests and a seam allowlist
-  verdict: unreviewed
-  evidence: []
+  verdict: approved
+  evidence:
+  - kind: test
+    ref: test-runs/3.ground-control
+    note: null
+  - kind: test
+    ref: test-runs/3.mothership
+    note: null
   comment: null
 - id: ac8
   text: Ground Control lists a host's workspaces from GET /workspaces and selecting
     one by name yields a working derived connection ({host}/workspaces/{id}) with
     identity overrides preserved across re-discovery; old persisted connection JSON
     still deserializes
-  verdict: unreviewed
-  evidence: []
+  verdict: approved
+  evidence:
+  - kind: test
+    ref: test-runs/3.ground-control
+    note: null
+  - kind: test
+    ref: test-runs/3.mothership
+    note: null
   comment: null
 - id: ac9
   text: Single-repo, monorepo (git_root children), and metarepo (sibling repos) workspace
     shapes are all exercised in discovery, context-construction, and serve tests
-  verdict: unreviewed
-  evidence: []
+  verdict: approved
+  evidence:
+  - kind: test
+    ref: test-runs/3.ground-control
+    note: null
+  - kind: test
+    ref: test-runs/3.mothership
+    note: null
   comment: null
 - id: ac10
   text: 'The same workspace discovered on two hosts yields two independent registry
     entries with no exclusive-ownership semantics (behavior test + docstring pointing
     cross-host arbitration at #473''s claims)'
-  verdict: unreviewed
-  evidence: []
+  verdict: approved
+  evidence:
+  - kind: test
+    ref: test-runs/3.ground-control
+    note: null
+  - kind: test
+    ref: test-runs/3.mothership
+    note: null
   comment: null
 - id: ac11
   text: 'A registry entry resolves everything #473 needs (path, repos topology, interpreter/venv,
     raw runner: block) with zero cwd or active-venv dependence'
-  verdict: unreviewed
-  evidence: []
+  verdict: approved
+  evidence:
+  - kind: test
+    ref: test-runs/3.ground-control
+    note: null
+  - kind: test
+    ref: test-runs/3.mothership
+    note: null
   comment: null
 - id: ac12
   text: Rename/move preserves identity via the workspace-id file; a deleted workspace
     degrades to a visible missing entry; a COPIED workspace (duplicate id at two live
     paths) keeps the existing path and surfaces the copy as a degraded duplicate-identity
     entry, order-independently
-  verdict: unreviewed
-  evidence: []
+  verdict: approved
+  evidence:
+  - kind: test
+    ref: test-runs/3.ground-control
+    note: null
+  - kind: test
+    ref: test-runs/3.mothership
+    note: null
   comment: null
 - id: ac13
   text: Two workspaces with the same basename or same display name coexist under distinct
     stable ids
-  verdict: unreviewed
-  evidence: []
+  verdict: approved
+  evidence:
+  - kind: test
+    ref: test-runs/3.ground-control
+    note: null
+  - kind: test
+    ref: test-runs/3.mothership
+    note: null
   comment: null
 - id: ac14
   text: mship workspace list|add|remove|ignore|refresh exist as override/inspection
     controls; add on a duplicate-identity copy mints a fresh id; refresh works both
     against a live daemon (control socket) and directly against the store when no
     daemon runs
-  verdict: unreviewed
-  evidence: []
+  verdict: approved
+  evidence:
+  - kind: test
+    ref: test-runs/3.ground-control
+    note: null
+  - kind: test
+    ref: test-runs/3.mothership
+    note: null
   comment: null
 open_questions: []
 non_goals:

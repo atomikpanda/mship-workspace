@@ -1,9 +1,9 @@
 ---
 id: mship-daemon-lifecycle-470
 title: Mothership daemon provisioning and supervision (#470)
-status: needs_review
+status: implemented
 created_at: '2026-08-16T23:24:45.624987Z'
-updated_at: '2026-08-16T23:25:36.644652Z'
+updated_at: '2026-08-17T00:46:58.936677Z'
 affected_repos:
 - mothership
 acceptance_criteria:
@@ -12,28 +12,40 @@ acceptance_criteria:
     (macOS) whose exec line resolves the mshipd entrypoint of the same installed distribution
     as the invoking CLI, sibling-first; an unverifiable resolution (dev-tree CLI,
     foreign PATH shim) refuses install with guidance to install the tool first
-  verdict: unreviewed
-  evidence: []
+  verdict: approved
+  evidence:
+  - kind: test
+    ref: test-runs/4.mothership
+    note: null
   comment: null
 - id: ac2
   text: Install on Linux runs loginctl enable-linger and verifies Linger=yes, failing
     loudly otherwise; mship daemon status re-warns whenever linger is off
-  verdict: unreviewed
-  evidence: []
+  verdict: approved
+  evidence:
+  - kind: test
+    ref: test-runs/4.mothership
+    note: null
   comment: null
 - id: ac3
   text: mship daemon start|stop|restart|status|logs exist and delegate through one
     injectable supervisor seam; mship daemon run runs mshipd in the foreground with
     no supervisor
-  verdict: unreviewed
-  evidence: []
+  verdict: approved
+  evidence:
+  - kind: test
+    ref: test-runs/4.mothership
+    note: null
   comment: null
 - id: ac4
   text: With no reachable user manager (probed via systemctl --user is-system-running,
     not binary presence), install fails loudly and names mship daemon run as the fallback
     - it never pretends persistence exists
-  verdict: unreviewed
-  evidence: []
+  verdict: approved
+  evidence:
+  - kind: test
+    ref: test-runs/4.mothership
+    note: null
   comment: null
 - id: ac5
   text: 'Single-instance guard: the daemon holds a lifetime flock on its lease file;
@@ -41,59 +53,83 @@ acceptance_criteria:
     exits nonzero, a stale lease is reclaimed even under pid reuse, concurrent cold
     starts converge on exactly one daemon (real-multiprocessing test), and no CLI/status
     path ever acquires the lease flock'
-  verdict: unreviewed
-  evidence: []
+  verdict: approved
+  evidence:
+  - kind: test
+    ref: test-runs/4.mothership
+    note: null
   comment: null
 - id: ac6
   text: Unit/plist text encodes restart-on-crash with bounded backoff and a visible
     terminal state (Restart=on-failure + RestartSec + StartLimit on systemd; KeepAlive.SuccessfulExit=false
     + ThrottleInterval + StandardOut/ErrorPath on launchd), asserted by parsing the
     rendered files, not substring match; no WorkingDirectory anywhere
-  verdict: unreviewed
-  evidence: []
+  verdict: approved
+  evidence:
+  - kind: test
+    ref: test-runs/4.mothership
+    note: null
   comment: null
 - id: ac7
   text: Crash loops are visible in status, computed OS-agnostically from the daemon's
     durable start-history file counting only unclean starts, so routine operator restarts
     do not read as a loop
-  verdict: unreviewed
-  evidence: []
+  verdict: approved
+  evidence:
+  - kind: test
+    ref: test-runs/4.mothership
+    note: null
   comment: null
 - id: ac8
   text: 'Logs are durable and rotated under ~/.mothership/daemon/logs/ and capture
     crashes: uvicorn loggers routed into the rotating handler and uncaught-exception
     tracebacks logged before exit; mship daemon logs tails them including rotated
     siblings, no journald dependency'
-  verdict: unreviewed
-  evidence: []
+  verdict: approved
+  evidence:
+  - kind: test
+    ref: test-runs/4.mothership
+    note: null
   comment: null
 - id: ac9
   text: The daemon reports the version it imported at process start plus a protocol
     integer over its control socket; status compares against the CLI version and prints
     a restart-required line on mismatch (exact-match policy)
-  verdict: unreviewed
-  evidence: []
+  verdict: approved
+  evidence:
+  - kind: test
+    ref: test-runs/4.mothership
+    note: null
   comment: null
 - id: ac10
   text: 'mship daemon restart consults a restart_blockers() seam (empty in v1, documented
     as the #473 recovery handoff) and refuses the restart when non-empty'
-  verdict: unreviewed
-  evidence: []
+  verdict: approved
+  evidence:
+  - kind: test
+    ref: test-runs/4.mothership
+    note: null
   comment: null
 - id: ac11
   text: Ordinary local mship commands work with no daemon present, and mship daemon
     status works from a directory with no mothership.yaml (no workspace discovery
     on any daemon path), both pinned by tests
-  verdict: unreviewed
-  evidence: []
+  verdict: approved
+  evidence:
+  - kind: test
+    ref: test-runs/4.mothership
+    note: null
   comment: null
 - id: ac12
   text: 'docs/daemon.md ships a manual/VM checklist covering the OS-contract items
     CI cannot exercise: SSH-logout survival via real linger, return after kill -9
     and reboot, headless launchd bootstrap over SSH (user/<uid> domain), crash loop
     tripping start-limit-hit, and upgrade-then-restart moving to the new version'
-  verdict: unreviewed
-  evidence: []
+  verdict: approved
+  evidence:
+  - kind: test
+    ref: test-runs/4.mothership
+    note: null
   comment: null
 open_questions: []
 non_goals:

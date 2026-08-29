@@ -1,9 +1,9 @@
 ---
 id: mship-context-for-kind-audience-shaped-mos-100
 title: mship context --for/--kind audience-shaped output (MOS-100)
-status: dispatched
+status: implemented
 created_at: '2026-07-11T18:09:00.427890Z'
-updated_at: '2026-07-11T18:50:31.026686Z'
+updated_at: '2026-07-11T20:43:55.077321Z'
 affected_repos:
 - mothership
 acceptance_criteria:

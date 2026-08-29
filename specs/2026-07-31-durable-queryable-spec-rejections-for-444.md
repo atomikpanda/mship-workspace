@@ -1,9 +1,9 @@
 ---
 id: durable-queryable-spec-rejections-for-444
 title: 'Durable, queryable spec rejections (substrate for #444 L5 ratchet)'
-status: approved
+status: implemented
 created_at: '2026-07-31T02:13:20.081217Z'
-updated_at: '2026-07-31T02:14:58.526908Z'
+updated_at: '2026-07-31T09:53:37.141908Z'
 affected_repos:
 - mothership
 acceptance_criteria:
@@ -13,36 +13,54 @@ acceptance_criteria:
     spec is later re-approved (i.e. it is not the clarification_reason field, which
     approval nulls).
   verdict: approved
-  evidence: []
+  evidence:
+  - kind: test
+    ref: test-runs/3.mothership
+    note: null
   comment: null
 - id: ac2
   text: The serve HTTP request-changes path writes the same durable rejection record
     as the CLI path.
   verdict: approved
-  evidence: []
+  evidence:
+  - kind: test
+    ref: test-runs/3.mothership
+    note: null
   comment: null
 - id: ac3
   text: A rejection with no reason is refused/prompted (reason required at rejection
     time), so the record always carries reason text.
   verdict: approved
-  evidence: []
+  evidence:
+  - kind: test
+    ref: test-runs/3.mothership
+    note: null
   comment: null
 - id: ac4
   text: '`mship spec rejections <id>` lists that spec''s rejections as {actor, reason,
     timestamp}, in chronological order, reading only the durable records (not clarification_reason).'
   verdict: approved
-  evidence: []
+  evidence:
+  - kind: test
+    ref: test-runs/3.mothership
+    note: null
   comment: null
 - id: ac5
   text: '`mship spec rejections --all` enumerates rejections across all specs for
     the L5 ratchet and future backtests.'
   verdict: approved
-  evidence: []
+  evidence:
+  - kind: test
+    ref: test-runs/3.mothership
+    note: null
   comment: null
 - id: ac6
   text: A malformed or legacy journal entry does not crash the query (it is skipped).
   verdict: approved
-  evidence: []
+  evidence:
+  - kind: test
+    ref: test-runs/3.mothership
+    note: null
   comment: null
 open_questions: []
 non_goals:

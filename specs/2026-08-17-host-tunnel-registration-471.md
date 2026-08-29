@@ -1,9 +1,9 @@
 ---
 id: host-tunnel-registration-471
 title: 'Tunnel registration: host reachable from the phone without an address (#471)'
-status: needs_review
+status: implemented
 created_at: '2026-08-17T18:26:17.918415Z'
-updated_at: '2026-08-17T18:26:54.547378Z'
+updated_at: '2026-08-20T12:30:09.113376Z'
 affected_repos:
 - mothership
 - ground-control
@@ -17,8 +17,14 @@ acceptance_criteria:
     \ /hosts (first pending-approval, then online) and in GC's host list, with the\
     \ phone holding only the relay domain + fleet token. Repeat posts from one key\
     \ collapse to exactly one pending record. (Unit end-to-end minus rea"
-  verdict: unreviewed
-  evidence: []
+  verdict: approved
+  evidence:
+  - kind: test
+    ref: test-runs/32.ground-control
+    note: null
+  - kind: test
+    ref: test-runs/32.mothership
+    note: null
   comment: null
 - id: ac2
   text: "AC2 \u2014 Killing the tunnel re-registers automatically. When the ssh -R\
@@ -28,8 +34,17 @@ acceptance_criteria:
     \ only now that the owner is an immortal daemon), and a successful respawn triggers\
     \ exactly one additional registration (not one per tick). (Unit with FakeProc\
     \ + list clock, driven past 1024 restarts; real pkill = manual.)"
-  verdict: unreviewed
-  evidence: []
+  verdict: approved
+  evidence:
+  - kind: test
+    ref: test-runs/32.ground-control
+    note: null
+  - kind: test
+    ref: test-runs/32.mothership
+    note: null
+  - kind: commit
+    ref: ad300257447ea09236b96a795aa9a567708392ba
+    note: null
   comment: null
 - id: ac3
   text: "AC3 \u2014 Relay redeploy touches no host. docker compose up -d --force-recreate\
@@ -40,8 +55,14 @@ acceptance_criteria:
     \ so no new port, container, DNS record, sish flag, compose change, or tls_ask\
     \ change is required \u2014 pinned by an assertion, not a comment. The one relay-config\
     \ delta is a single Caddy matcher on the existing "
-  verdict: unreviewed
-  evidence: []
+  verdict: approved
+  evidence:
+  - kind: test
+    ref: test-runs/32.ground-control
+    note: null
+  - kind: test
+    ref: test-runs/32.mothership
+    note: null
   comment: null
 - id: ac4
   text: "AC4 \u2014 A cloned VM is detected and re-identified, never silently shadowing.\
@@ -52,16 +73,31 @@ acceptance_criteria:
     \ fresh one before the tunnel is built), so the clone lands on a different subdomain,\
     \ is not in pubkeys/, and enters awaiting-enrollment. This net only fires on a\
     \ re-imaged host. (b) on the wire, for the fingerprint-i"
-  verdict: unreviewed
-  evidence: []
+  verdict: approved
+  evidence:
+  - kind: test
+    ref: test-runs/32.ground-control
+    note: null
+  - kind: test
+    ref: test-runs/32.mothership
+    note: null
+  - kind: commit
+    ref: 1a26d10888cb7e3d6a463254f4e92de443f46120
+    note: null
   comment: null
 - id: ac5
   text: "AC5 \u2014 Multiple hosts are independently visible and addressable. Two\
     \ hosts (two home dirs) register independently, appear as two directory entries\
     \ with distinct subdomains and distinct credentials, and neither's staleness or\
     \ failure hides or degrades the other in GC. (Unit.)"
-  verdict: unreviewed
-  evidence: []
+  verdict: approved
+  evidence:
+  - kind: test
+    ref: test-runs/32.ground-control
+    note: null
+  - kind: test
+    ref: test-runs/32.mothership
+    note: null
   comment: null
 - id: ac6
   text: "AC6 \u2014 #473 runner status rides this path, not a parallel one. The registration\
@@ -70,8 +106,14 @@ acceptance_criteria:
     \ opaque WorkspaceEntry.runner passthrough (dropped today in host_app.py's /workspaces\
     \ projection). #471 always reports disabled/unknown; #473 fills idle|active|degraded\
     \ in the same field with no new transport. (Unit, contract/identity style.)"
-  verdict: unreviewed
-  evidence: []
+  verdict: approved
+  evidence:
+  - kind: test
+    ref: test-runs/32.ground-control
+    note: null
+  - kind: test
+    ref: test-runs/32.mothership
+    note: null
   comment: null
 - id: ac7
   text: "AC7 \u2014 A tunnel outage does not terminate a healthy worker. The tunnel\
@@ -82,8 +124,17 @@ acceptance_criteria:
     \ status.restart_blockers(), and current durable state is visible again after\
     \ reconnect (read on demand, never streamed). (Unit; \"a worker survives a 10-minute\
     \ real outage\" = manual.)"
-  verdict: unreviewed
-  evidence: []
+  verdict: approved
+  evidence:
+  - kind: test
+    ref: test-runs/32.ground-control
+    note: null
+  - kind: test
+    ref: test-runs/32.mothership
+    note: null
+  - kind: commit
+    ref: 53db01b8f0fb24dd57fb4aab8e6266ea013edb2d
+    note: null
   comment: null
 - id: ac8
   text: "AC8 \u2014 Auth requires no interactive entry at boot. Identity, secret,\
@@ -91,8 +142,14 @@ acceptance_criteria:
     \ when the key is not yet approved the daemon reports awaiting-enrollment, keeps\
     \ its enroll request alive across the store TTL, and self-heals on approval. It\
     \ never prompts and never blocks on the 1800s polling loop. (Unit.)"
-  verdict: unreviewed
-  evidence: []
+  verdict: approved
+  evidence:
+  - kind: test
+    ref: test-runs/32.ground-control
+    note: null
+  - kind: test
+    ref: test-runs/32.mothership
+    note: null
   comment: null
 - id: ac9
   text: "AC9 \u2014 The host's API bearer is short-lived and self-verified. No standing\
@@ -103,8 +160,17 @@ acceptance_criteria:
     \ so a host reachable on LAN/tailnet stays usable while the relay is down. The\
     \ standing token survives as an internal sub-app credential and for direct non-relay\
     \ origins (loopback/LAN), so first-time LAN pairi"
-  verdict: unreviewed
-  evidence: []
+  verdict: approved
+  evidence:
+  - kind: test
+    ref: test-runs/32.ground-control
+    note: null
+  - kind: test
+    ref: test-runs/32.mothership
+    note: null
+  - kind: commit
+    ref: 1a26d10888cb7e3d6a463254f4e92de443f46120
+    note: null
   comment: null
 - id: ac10
   text: "AC10 \u2014 Clock skew on a long-lived VM does not break token validation.\
@@ -115,8 +181,14 @@ acceptance_criteria:
     \ shipped verify_run_token's bare clock() >= expires_at has neither and is re-pointed\
     \ at the same helper. Cross-machine freshness decisions (last_seen, staleness,\
     \ challenge expiry) are stamped with the relay's clock, never "
-  verdict: unreviewed
-  evidence: []
+  verdict: approved
+  evidence:
+  - kind: test
+    ref: test-runs/32.ground-control
+    note: null
+  - kind: test
+    ref: test-runs/32.mothership
+    note: null
   comment: null
 - id: ac11
   text: "AC11 \u2014 Network flap mid-run corrupts or duplicates nothing. Reconnect\
@@ -126,8 +198,14 @@ acceptance_criteria:
     \ cycles leave ~/.mothership/daemon/ byte-identical (asserted over the directory\
     \ itself, not merely everything outside it) and produce exactly one directory\
     \ entry. (Unit.)"
-  verdict: unreviewed
-  evidence: []
+  verdict: approved
+  evidence:
+  - kind: test
+    ref: test-runs/32.ground-control
+    note: null
+  - kind: test
+    ref: test-runs/32.mothership
+    note: null
   comment: null
 - id: ac12
   text: "AC12 \u2014 Tunnel state is first-class. mship daemon status reports state\
@@ -136,8 +214,14 @@ acceptance_criteria:
     \ is a real value; the literal \"tunnel: not configured (#471)\" assertion in\
     \ tests/core/daemon/test_status.py is replaced by per-state cases. GC distinguishes\
     \ the six ladder states plus directory-unreachable and stale. (Unit.)"
-  verdict: unreviewed
-  evidence: []
+  verdict: approved
+  evidence:
+  - kind: test
+    ref: test-runs/32.ground-control
+    note: null
+  - kind: test
+    ref: test-runs/32.mothership
+    note: null
   comment: null
 - id: ac13
   text: "AC13 \u2014 Exactly one inbound path. No new port, container, DNS record,\
@@ -148,8 +232,14 @@ acceptance_criteria:
     \ hardened to POST /enroll + GET /status/ with a respond \"not found\" 404 catch-all\
     \ \u2014 without it every new route 404s in production while every unit test passes\
     \ through TestClient. Pinned by a test asserting every route p"
-  verdict: unreviewed
-  evidence: []
+  verdict: approved
+  evidence:
+  - kind: test
+    ref: test-runs/32.ground-control
+    note: null
+  - kind: test
+    ref: test-runs/32.mothership
+    note: null
   comment: null
 open_questions: []
 non_goals:
@@ -184,8 +274,8 @@ risks:
 - A fleet-wide relay redeploy can stampede reconnects without jitter
 - Several ACs (real DNS/TLS, live force-recreate, real reboot/kill) are structurally
   uncloseable in CI on this box and are honest manual/VM checklist items
-task_slug: null
-work_item_id: null
+task_slug: host-tunnel-registration-471
+work_item_id: wi-20260817183324-8c05a998
 clarification_reason: null
 prose_verdicts: {}
 ---

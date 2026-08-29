@@ -2,9 +2,9 @@
 id: workitem-focused-zellij-cockpit
 title: 'WorkItem-focused zellij cockpit: mship layout focus + dynamic per-item tabs
   with phase sub-tabs'
-status: needs_review
+status: implemented
 created_at: '2026-07-21T11:11:17.171167Z'
-updated_at: '2026-07-21T11:20:14.413484Z'
+updated_at: '2026-07-21T12:17:45.286399Z'
 affected_repos:
 - mothership
 acceptance_criteria:
@@ -13,50 +13,152 @@ acceptance_criteria:
     `mship view workitem`); the old name is either aliased or cleanly removed with
     an error pointing to the new name. `mship view items` is registered and appears
     in `mship view --help`.'
-  verdict: unreviewed
-  evidence: []
+  verdict: approved
+  evidence:
+  - kind: test
+    ref: test-runs/1.mothership
+    note: null
+  - kind: commit
+    ref: 3abc365ac04e5cd27f165ec81e5edf084e787367
+    note: null
+  - kind: test
+    ref: test-runs/1.mothership
+    note: null
+  - kind: commit
+    ref: 3abc365
+    note: null
   comment: null
 - id: ac2
   text: '`mship view items` lists the workspace''s WorkItems (id, title, derived phase,
     attention) as a navigable master/detail picker, reusing the shipped foundation.'
-  verdict: unreviewed
-  evidence: []
+  verdict: approved
+  evidence:
+  - kind: test
+    ref: test-runs/1.mothership
+    note: null
+  - kind: commit
+    ref: dfb1c96b80b8810df6f6d51271e86b2bfd2370a2
+    note: null
+  - kind: test
+    ref: test-runs/1.mothership
+    note: null
+  - kind: commit
+    ref: dfb1c96
+    note: null
   comment: null
 - id: ac3
   text: '`mship layout focus <item-id>` switches to that item''s zellij tab when it
     already exists (go-to-tab-name), else creates it (new-tab with a per-WorkItem
     layout, named deterministically for the item, cwd = the item''s task worktree).
     Outside a zellij session it no-ops with a clear message instead of crashing.'
-  verdict: unreviewed
-  evidence: []
+  verdict: approved
+  evidence:
+  - kind: test
+    ref: test-runs/1.mothership
+    note: null
+  - kind: commit
+    ref: f360aa3ac6642866389053bab254e75e4ac51e4d
+    note: null
+  - kind: commit
+    ref: 497a5f482d2b3c70dc1f6ec67d7251159f99c131
+    note: null
+  - kind: commit
+    ref: ab8e0ba3fc92dfcb3d79dfe605f3488c5fb02194
+    note: null
+  - kind: test
+    ref: test-runs/1.mothership
+    note: null
+  - kind: commit
+    ref: f360aa3
+    note: null
   comment: null
 - id: ac4
   text: "The per-WorkItem tab is chat-first: a primary agent/chat pane running a configurable\
     \ command (default: a shell in the worktree), plus explicit phase sub-tabs Plan/Dev/Review/Run,\
     \ plus an editor pane \u2014 all cd'd to the worktree."
-  verdict: unreviewed
-  evidence: []
+  verdict: approved
+  evidence:
+  - kind: test
+    ref: test-runs/1.mothership
+    note: null
+  - kind: commit
+    ref: 6d943e7c6879860e7e06db3e340a18f97d541a12
+    note: null
+  - kind: test
+    ref: test-runs/1.mothership
+    note: null
+  - kind: commit
+    ref: 6d943e7
+    note: null
   comment: null
 - id: ac5
   text: 'Each phase sub-tab shows the ambient views for that phase using the shipped
     view commands with the item baked in: Plan -> the item''s spec (+ open questions);
     Dev -> diff + journal (+ agent heartbeat); Review -> the PR/checks + diff; Run
     -> logs.'
-  verdict: unreviewed
-  evidence: []
+  verdict: approved
+  evidence:
+  - kind: test
+    ref: test-runs/1.mothership
+    note: null
+  - kind: commit
+    ref: f360aa3ac6642866389053bab254e75e4ac51e4d
+    note: null
+  - kind: commit
+    ref: 6d943e7c6879860e7e06db3e340a18f97d541a12
+    note: null
+  - kind: test
+    ref: test-runs/1.mothership
+    note: null
+  - kind: commit
+    ref: 6d943e7
+    note: null
   comment: null
 - id: ac6
   text: '`mship layout` gains the per-WorkItem tab template and wires an overview
     tab (`mship view queue` + `mship view items`) as the launchpad; picking an item
     in the overview focuses its tab (composes with `mship layout focus`).'
-  verdict: unreviewed
-  evidence: []
+  verdict: approved
+  evidence:
+  - kind: test
+    ref: test-runs/1.mothership
+    note: null
+  - kind: commit
+    ref: be853756672c4590a028825e2a8a21335b7191ff
+    note: null
+  - kind: commit
+    ref: dfb1c96b80b8810df6f6d51271e86b2bfd2370a2
+    note: null
+  - kind: test
+    ref: test-runs/1.mothership
+    note: null
+  - kind: commit
+    ref: be85375
+    note: null
   comment: null
 - id: ac7
   text: A focused item's tab is closed when the item reaches `done` (or via an explicit
     close), so tabs do not accumulate across completed WorkItems.
-  verdict: unreviewed
-  evidence: []
+  verdict: approved
+  evidence:
+  - kind: test
+    ref: test-runs/1.mothership
+    note: null
+  - kind: commit
+    ref: b8586a096e15a79767b7491af4ee0c3344eb3004
+    note: null
+  - kind: commit
+    ref: f360aa3ac6642866389053bab254e75e4ac51e4d
+    note: null
+  - kind: commit
+    ref: ab8e0ba3fc92dfcb3d79dfe605f3488c5fb02194
+    note: null
+  - kind: test
+    ref: test-runs/1.mothership
+    note: null
+  - kind: commit
+    ref: b8586a0
+    note: null
   comment: null
 open_questions: []
 non_goals:
@@ -81,8 +183,8 @@ risks:
   name deterministically from the item id and reconcile on focus.
 - Renaming a shipped command (`mship view workitem`) is a CLI break; keep a deprecation
   alias or emit a clear error pointing to `mship view item`.
-task_slug: null
-work_item_id: null
+task_slug: workitem-focused-zellij-cockpit
+work_item_id: wi-20260721112502-fcff67ab
 clarification_reason: null
 prose_verdicts: {}
 ---
